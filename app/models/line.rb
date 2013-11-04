@@ -8,7 +8,44 @@ class Line
 	def intersect(other_line)
 
 	end
+
+	def magnitude
+		Math.sqrt((start_lng - end_lng)**2 + (start_lat - end_lat)**2)
+	end
+
 	def include_point(other_lat, other_lng)
-		
+
+	end
+
+	def start
+		return [start_lat, start_lng]
+	end
+
+	def start=(arry=[nil,nil])
+		self.start_lat = arry[0] if arry[0]
+		self.start_lng = arry[1] if arry[1]
+		self.save
+	end
+
+	def finish
+		return [end_lat, end_lng]
+	end
+
+	def finish=(arry=[nil,nil])
+		self.end_lat = arry[0] if arry[0]
+		self.end_lng = arry[1] if arry[1]
+		self.save
+	end
+
+	def vector
+		return [(end_lat - start_lat), (end_lng, - start_lng)]
+	end
+
+	def inverse_vector
+		return [(start_lat - end_lat), (start_lng, - end_lng)]
+	end
+
+	def -(other)
+		[(self.start[0] - other.finish[0]), (self.start[1] - other.finish[1])]
 	end
 end

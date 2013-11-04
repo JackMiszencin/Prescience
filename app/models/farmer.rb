@@ -1,4 +1,4 @@
-class Farmer < ActiveRecord::Base
+class Farmer
   include Mongoid::Document
   include Mongoid::Timestamps
   has_many :farms
