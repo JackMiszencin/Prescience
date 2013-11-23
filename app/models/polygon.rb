@@ -57,7 +57,8 @@ class Polygon
 
 		c.lines.create(:start => initial.start, :finish => initial.finish)
 		continue = true
-		while continue == true # WE'RE GOING TO KEEP ON GOING I SUPPOSE UNTIL WE REACH A POINT THAT GETS THE POLYGON AND THE REFERENCE LINE GOING IN THE
+		skipped_cursor = nil
+		while cursor < self.lines.count # WE'RE GOING TO KEEP ON GOING I SUPPOSE UNTIL WE REACH A POINT THAT GETS THE POLYGON AND THE REFERENCE LINE GOING IN THE
 			# SAME DIRECTION
 
 			# TO BE CLEAR, THE LINE AT [CURSOR] IS THE ONE THAT IS BEING CHECKED, NOT THE ONE THAT HAS ALREADY BEEN ADDED.
@@ -67,27 +68,29 @@ class Polygon
 			# DETERMINED WOULD FIT THE REFERENCE LINE
 
 			prev = self.lines[cursor - 1]
+			prev = skipped_cursor if skipped_cursor
+			skipped_cursor = nil
 			l = self.lines[cursor]
-			if # SAYS THAT THE REFERENCE AND THE CURRENT LINE FIT
+			if self.same_direction(reference.vector, [ (l.start_lat - reference.end_lat), (l.start_lng - reference.end_lng) ]) # SAYS THAT THE REFERENCE AND THE CURRENT LINE FIT
 				c.lines.create(:start => prev.finish, :finish => initial.start)
 				return cursor
 			else
 				if self.same_direction(l.vector, prev.vector) && self.same_direction([ (l.end_lat - initial.start_lat), (l.end_lng - initial.start_lng) ], initial.vector)
 					c.lines.create(:start => l.start, :finish => l.finish)
 				else
+					skipped_cursor = cursor
 					cursor = self.create_convex(cursor)
-					x = c.lines[cursor]
+					x = self.lines[cursor]
 					c.lines.create(:start => prev.finish, :finish => x.start)
+
+					# MAKE SURE THAT A LINE BETWEEN THE END OF X AND THE START OF INITIAL IS IN THE SAME DIRECTION
 					c.lines.create(:start => x.start, :finish => x.finish)
 				end
 				cursor += 1
 			end
-
-
-
-
 		end # END WHILE LOOP
-		return cursor
+		c.lines.create(:start => )
+		return nil
 	end
 
 end
