@@ -89,7 +89,7 @@ class Polygon
 				cursor += 1
 			end
 		end # END WHILE LOOP
-		c.lines.create(:start => )
+		# c.lines.create(:start => )
 		return nil
 	end
 
