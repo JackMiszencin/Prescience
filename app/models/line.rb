@@ -53,21 +53,38 @@ class Line
 		b2 = other.y_coefficient
 		c2 = other.constant
 		if a1 == 0.0 # this line is horizontal
+			if b1 == 0.0 # this line is actually just a point, or a vector with zero magnitude
+				# return false
+				# Comment out below lines and uncomment above line if you want to make endpoints not count as an intersection.
+				if start_lng * a2 + start_lat * b2 == c2 && other.in_range(start_lng, start_lat)
+					return [start_lng, start_lat]
+				else
+					return false
+				end
+			end
 			y1 = c1/b1
 			if a2 == 0.0 # other line is horizontal
-				y2 = c2/b2
-				if y1 == y2 # if the two horizontal lines lie at the same y-coordinate
-					if (max_x > other.min_x) && (min_x < other.max_x)
-						return true
-					elsif max_x == other.min_x
-						return [max_x, y1]
-					elsif min_x == other.max_x
-						return [min_x, y1]
+				if b2 == 0.0 # other line is just a point
+					if other.start_lat == y1 && in_range(other.start_lng, other.start_lat)
+						return [other.start_lng, other.start_lat]
 					else
 						return false
 					end
 				else
-					return false
+					y2 = c2/b2
+					if y1 == y2 # if the two horizontal lines lie at the same y-coordinate
+						if (max_x > other.min_x) && (min_x < other.max_x)
+							return true
+						elsif max_x == other.min_x
+							return [max_x, y1]
+						elsif min_x == other.max_x
+							return [min_x, y1]
+						else
+							return false
+						end
+					else
+						return false
+					end
 				end
 			elsif b2 == 0.0 # other line is vertical
 				x2 = c2/a2
@@ -76,19 +93,78 @@ class Line
 				else
 					return false
 				end
-			elsif b1 == 0.0 # this line is actually just a point, or a vector with zero magnitude
-				# return false
-				# Comment out below lines and uncomment above line if you want to make endpoints not count as an intersection.
-				if start_lat * a2 + start_lng * b2 == c2
-					return [start_lat, start_lng]
+			else
+				x2 = c2/a2 - b2*y1
+				if in_range(x2,y1) && other.in_range(x2,y1)
+					return [x2,y1]
+				else
+					return false
+				end
+			end
+		elsif b1 == 0.0 # this line is vertical
+			x1 = c1/a1
+			if b2 == 0.0 # other line is vertical
+				if a2 == 0.0 # other line is just a point
+					if other.start_lng == x1 && in_range(other.start_lng, other.start_lat)
+						return [x1, other.start_lat]
+					else
+						return false
+					end
+				else
+					x2 = c2/a2
+					if x2 == x1
+						if (max_y > other.min_y) && (min_y < other.max_y)
+							return true
+						elsif max_y == other.min_y
+							return [x1, max_y]
+						elsif min_y == other.max_y
+							return [x1, min_y]
+						else
+							return false
+						end
+					else
+						return false
+					end
+				end
+			elsif a2 == 0.0 # other line is horizontal
+				y2 = c2/b2
+				if in_range(x1,y2) && other.in_range(x1,y2)
+					return [x1,y2]
 				else
 					return false
 				end
 			else
+				y2 = (c2/b2) - (x1 * a2/b2)
+				if in_range(x1,y2) && other.in_range(x1,y2)
+					return [x1, y2]
+				else
+					return false
+				end
 			end
-		elsif b1 == 0.0 # this line is vertical
 		elsif a2 == 0.0 # other line is horizontal
+			if b2 == 0.0 # other line is actually just a point
+				if a1*other.start_lng + b1*other.start_lat == c1 && in_range(other.start_lng, other.start_lat)
+					return [other.start_lng, other.start_lat]
+				else
+					return false
+				end
+			else
+				y2 = other.start_lat
+				x1 = (c1 - b1*y2)/a1
+				if in_range(x1, y2)
+					return [x1, y2]
+				else
+					return false
+				end
+			end
 		elsif b2 == 0.0 # other line is vertical
+			x2 = other.start_lng
+			y1 = (c1 - a1*x2)/b1
+			if in_range(x2, y1)
+				return [x2, y1]
+			else
+				return false
+			end
 		elsif a1/b1 == a2/b2 # two lines have same slope
 			if c1/a1 == c2/a2
 				if (max_x > other.min_x) && (min_x < other.max_x) && (max_y > other.min_y) && (min_y < other.max_y)
@@ -111,27 +187,26 @@ class Line
 			else
 				return false
 			end
-		end
-			
+		end			
 	end
 
 	def in_range(x,y) # check to see if horizontal or vertical segments whose lines intersect can actually intersect themsleves
 		(x >= min_x && x <= max_x && y >= min_y && y <= max_y)
 	end
 
-	def max_x
+	def max_y
 		[start_lat, end_lat].max
 	end
 
-	def max_y
+	def max_x
 		[start_lng, end_lng].max
 	end
 
-	def min_x
+	def min_y
 		[start_lat, end_lat].min
 	end
 
-	def min_y
+	def min_x
 		[start_lng, end_lng].min
 	end
 
