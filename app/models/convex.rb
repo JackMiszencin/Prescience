@@ -2,6 +2,7 @@ class Convex
 	include Mongoid::Document
 	embeds_many :lines
 	embeds_many :triangles
+	# add in validation to make sure all cross products are in same direction
 	def triangulate
 		primary = self.lines.first.start
 		self.lines.each_with_index do |l, idx|
@@ -10,5 +11,13 @@ class Convex
 		end
 		self.save
 		return self.triangles
+	end
+
+	def reset_first
+		lines.first.destroy
+	end
+
+	def reset_last
+		lines.last.destroy
 	end
 end

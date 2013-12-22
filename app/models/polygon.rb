@@ -30,13 +30,77 @@ class Polygon
 	end
 
 	def triangulate
-		self.lines.each_with_index do |l, idx|
-			if self.same_direction(l.vector, self.lines[((idx + 1 == self.lines.length) ? -1 : (idx + 1) )]) && self.same_direction(self.lines[idx + 1].vector, self.lines.first.vector)
-				# Examine logic of above line for use in create_convex recursion
-			else
+		idx = 0
+		fin = lines.length - 1
+		genesis = lines[0]
+		c = self.convexes.build
+		c.lines << genesis
+		while idx <= fin
+			idx2 = idx + 1
+			current = lines[idx]
+			frontier = lines[idx2]
+			# Translation of below line: If this and next line are not in same direction as polygon spin
+			if self.same_direction(current.vector, (frontier || genesis).vector )  && no_intersection(idx2) # Not really sure what this line was for: < && self.same_direction(self.lines[idx + 1].vector, self.lines.first.vector) >
+				c.lines << frontier
+				idx += 1
+				next 
+			else # Go into build_convex, which will give you an index value back to feed idx as the next line to process
+				idx3 = build_convex(idx2)
+				new_line = Line.new(:start => current.finish, :finish => self.lines[idx3].start)
+				reset_lines(idx2, idx3, new_line)
+				idx = idx2
+				next
 			end
 		end
+		self.save
 	end
+
+	def no_intersection(idx)
+		l1 = self.lines[idx]
+		l2 = Line.new(:start => l1.finish, :finish => self.lines.first.start)
+		for i in ((idx+1)..(line_count-1))
+			l3 = self.lines[i]
+			if i == idx+2
+				if l1.intersection(l3) == l3.start
+					next
+				else # There should probably be some elsifs in here for other conditions. I think for right now, we just need to assume that validations will prevent these possibilities.
+					return false
+				end
+			elsif i == line_count - 1
+				if l1.intersect(l3) == l3.start
+					next
+				else
+					return false
+				end
+			else
+				if l1.intersect(l3)
+					return false
+				end
+			end
+		end
+		return true
+	end
+
+	def reset_lines(sub_idx,con_idx,new_line) # index of the line to be substituted, index of the next valid line, new line to replace substituted line
+		remnants = []
+		items = self.lines.map{|x| x }
+		idx = 0
+		while idx < self.lines.count
+			if idx < sub_idx
+				remnants << items[idx]
+			elsif idx == sub_idx
+				remnants << new_line
+			elsif idx >= con_idx
+				remnants << items[idx]
+			else
+				remnants = remnants
+			end
+			idx += 1
+		end
+		self.lines = remnants
+		self.save
+	end
+
 
 	def line_count
 		self.lines.count
@@ -47,7 +111,7 @@ class Polygon
 	end
 
 	# Make this a recursive funciton that calls itself every time there's a new line encountered which presents an alternate direction from the turn of the polygon.
-	def create_convex(index)
+	def create_convex(index) # returns an index
 		cursor = index
 		c = self.convexes.create
 		reference = self.lines[cursor - 1]
