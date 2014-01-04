@@ -11,8 +11,9 @@ class Line
 	validate :check_points
 
 	def check_points # NEED TO ADD VALIDATION THAT ENSURES LINE HAS LENGTH GREATER THAN ZERO
+		puts "Running Validation"
 		[:start, :finish].each do |x|
-			errors.add(x, "Must have both longitude and latitude") unless self.send(x).length == 2
+			return errors.add(x, "Must have both longitude and latitude") unless self.send(x).class.to_s == "Array" && self.send(x).length == 2
 		end
 		[:start, :finish].each do |x|
 			self.send(x).each do |y|
@@ -62,7 +63,7 @@ class Line
 					return false
 				end
 			end
-			y1 = c1/b1
+			y1 = (c1/b1).round(6)
 			if a2 == 0.0 # other line is horizontal
 				if b2 == 0.0 # other line is just a point
 					if other.start_lat == y1 && in_range(other.start_lng, other.start_lat)
@@ -71,7 +72,7 @@ class Line
 						return false
 					end
 				else
-					y2 = c2/b2
+					y2 = (c2/b2).round(6)
 					if y1 == y2 # if the two horizontal lines lie at the same y-coordinate
 						if (max_x > other.min_x) && (min_x < other.max_x)
 							return true
@@ -87,14 +88,14 @@ class Line
 					end
 				end
 			elsif b2 == 0.0 # other line is vertical
-				x2 = c2/a2
+				x2 = (c2/a2).round(6)
 				if y1 <= other.max_y && y1 >= other.min_y && max_x >= x2 && min_x <= x2
 					return [x2, y1]
 				else
 					return false
 				end
 			else
-				x2 = c2/a2 - b2*y1
+				x2 = (c2/a2 - b2*y1).round(6)
 				if in_range(x2,y1) && other.in_range(x2,y1)
 					return [x2,y1]
 				else
@@ -102,7 +103,7 @@ class Line
 				end
 			end
 		elsif b1 == 0.0 # this line is vertical
-			x1 = c1/a1
+			x1 = (c1/a1).round(6)
 			if b2 == 0.0 # other line is vertical
 				if a2 == 0.0 # other line is just a point
 					if other.start_lng == x1 && in_range(other.start_lng, other.start_lat)
@@ -111,7 +112,7 @@ class Line
 						return false
 					end
 				else
-					x2 = c2/a2
+					x2 = (c2/a2).round(6)
 					if x2 == x1
 						if (max_y > other.min_y) && (min_y < other.max_y)
 							return true
@@ -127,14 +128,14 @@ class Line
 					end
 				end
 			elsif a2 == 0.0 # other line is horizontal
-				y2 = c2/b2
+				y2 = (c2/b2).round(6)
 				if in_range(x1,y2) && other.in_range(x1,y2)
 					return [x1,y2]
 				else
 					return false
 				end
 			else
-				y2 = (c2/b2) - (x1 * a2/b2)
+				y2 = ((c2/b2) - (x1 * a2/b2)).round(6)
 				if in_range(x1,y2) && other.in_range(x1,y2)
 					return [x1, y2]
 				else
@@ -143,15 +144,15 @@ class Line
 			end
 		elsif a2 == 0.0 # other line is horizontal
 			if b2 == 0.0 # other line is actually just a point
-				if a1*other.start_lng + b1*other.start_lat == c1 && in_range(other.start_lng, other.start_lat)
+				if (a1*other.start_lng + b1*other.start_lat).round(8) == c1 && in_range(other.start_lng, other.start_lat)
 					return [other.start_lng, other.start_lat]
 				else
 					return false
 				end
 			else
 				y2 = other.start_lat
-				x1 = (c1 - b1*y2)/a1
-				if in_range(x1, y2)
+				x1 = ((c1 - b1*y2)/a1).round(6)
+				if in_range(x1, y2) && other.in_range(x1, y2)
 					return [x1, y2]
 				else
 					return false
@@ -159,14 +160,14 @@ class Line
 			end
 		elsif b2 == 0.0 # other line is vertical
 			x2 = other.start_lng
-			y1 = (c1 - a1*x2)/b1
-			if in_range(x2, y1)
+			y1 = ((c1 - a1*x2)/b1).round(6)
+			if in_range(x2, y1) && other.in_range(x2, y1)
 				return [x2, y1]
 			else
 				return false
 			end
 		elsif a1/b1 == a2/b2 # two lines have same slope
-			if c1/a1 == c2/a2
+			if (c1/a1).round(8) == c2/a2.round(8)
 				if (max_x > other.min_x) && (min_x < other.max_x) && (max_y > other.min_y) && (min_y < other.max_y)
 					return true
 				elsif max_x == other.min_x # If at the same slope and y intercept, having equal minimun and maximum x'es will be the same as having the same minimum and maximum y'es
@@ -180,8 +181,13 @@ class Line
 				return false
 			end
 		else # Standard line intersection
-			x = (c1/b1 - c2/b2)/(a1/b1 - a2/b2)
-			y = (-1.0*a1/b1) * x + (c1/b1)
+			puts "getting into the branch we expected"
+			x = ((c1/b1 - c2/b2)/(a1/b1 - a2/b2)).round(6)
+			puts x.to_s
+			y = ((-1.0*a1/b1) * x + (c1/b1)).round(6)
+			puts y.to_s
+			puts in_range(x,y).to_s
+			puts other.in_range(x,y)
 			if in_range(x,y) && other.in_range(x,y)
 				return [x,y]
 			else

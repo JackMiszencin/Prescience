@@ -3,7 +3,7 @@ module ApplicationHelper
 		def dot_product(vector_1, vector_2)
 			return (vector_1[0]*vector_2[0] + vector_1[1]*vector_2[1])
 		end
-		def cross_product(vector_!, vector_2)
+		def cross_product(vector_1, vector_2)
 			return (vector_1[0]*vector_2[1] - vector_2[0]*vector_1[1])
 		end
 		def cross_product_direction(vector_1, vector_2)
