@@ -60,6 +60,14 @@ class Polygon
 			end
 		end
 		self.save
+		self.convexes.each do |x|
+			self.triangles << x.triangulate
+		end
+		self.save
+	end
+
+	def includes_point(arry)
+		self.triangles.collect{|x| x.includes_point(arry)}.include? true
 	end
 
 	def no_intersection(idx, to_line)

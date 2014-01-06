@@ -13,6 +13,7 @@ class Triangle
 	# validates :second_point, :presence => true, :length => {:is => 2}
 	# validates :second_point, :presence => true, :length => {:is => 2}
 	validate :check_points
+	after_update :make_lines
 
 	def check_points
 		[:first_point, :second_point, :third_point].each do |x|
@@ -31,19 +32,13 @@ class Triangle
 	# after_create :make_lines
 
 	def make_lines
-		self.lines.each do |x|
-			x.destroy
-		end
-		l1 = self.lines.build
-		l1.start = self.first_point
-		l1.finish = self.second_point
-		l2 = self.lines.build
-		l2.start = self.second_point
-		l2.finish = self.third_point
-		l3 = self.lines.build
-		l3.start = self.third_point
-		l3.finish = self.first_point
-		self.save
+		self.lines = []
+		l1 = Line.new(:start => self.first_point, :finish => self.second_point)
+		l2 = Line.new(:start => self.second_point, :finish => self.third_point)
+		l3 = Line.new(:start => self.third_point, :finish => self.first_point)
+		self.lines << l1
+		self.lines << l2
+		self.lines << l3
 	end
 
 	# def new_line(point)
