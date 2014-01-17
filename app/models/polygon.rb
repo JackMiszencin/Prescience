@@ -38,14 +38,14 @@ class Polygon
 		idx = 0
 		genesis = self.lines[0]
 		c = self.convexes.build
-		c.lines << genesis
+		c.lines << genesis.clone
 		while idx <= line_count - 2
 			idx2 = idx + 1
 			current = lines[idx]
 			frontier = lines[idx2]
 			# Translation of below line: If this and next line are not in same direction as polygon spin
 			if same_direction(current.vector, (frontier || genesis).vector ) && no_intersection(idx2, nil) # Not really sure what this line was for: < && self.same_direction(self.lines[idx + 1].vector, self.lines.first.vector) >
-				c.lines << frontier
+				c.lines << frontier.clone
 				idx += 1
 				next 
 			else # Go into build_convex, which will give you an index value back to feed idx as the next line to process
@@ -60,8 +60,11 @@ class Polygon
 			end
 		end
 		self.save
+		self.triangles = []
 		self.convexes.each do |x|
-			self.triangles << x.triangulate
+			x.triangulate.each do |y|
+				self.triangles << y.clone
+			end
 		end
 		self.save
 	end
@@ -139,11 +142,11 @@ class Polygon
 		idx = 0
 		while idx < self.lines.count
 			if idx < sub_idx
-				remnants << items[idx]
+				remnants << items[idx].clone
 			elsif idx == sub_idx
-				remnants << new_line
+				remnants << new_line.clone
 			elsif idx >= con_idx
-				remnants << items[idx]
+				remnants << items[idx].clone
 			else
 				remnants = remnants
 			end
@@ -170,7 +173,7 @@ class Polygon
 		genesis = self.lines[idx]
 		reference = self.lines[idx-1]
 		c = self.convexes.build
-		c.lines << genesis
+		c.lines << genesis.clone
 		while idx <= fin
 			idx2 = idx + 1
 			idx3 = idx + 2
@@ -180,7 +183,7 @@ class Polygon
 			puts "Checking no intersection on #{idx2.to_s}: " + no_intersection(idx2, genesis).to_s
 			puts "Checking same_direction on #{idx2.to_s}: " + same_direction(current.vector, (frontier || genesis).vector ).to_s
 			if same_direction(current.vector, (frontier || genesis).vector ) && no_intersection(idx2, genesis) # Not really sure what this line was for: < && self.same_direction(self.lines[idx + 1].vector, self.lines.first.vector) >
-				c.lines << frontier
+				c.lines << frontier.clone
 				test_line = Line.new(:start => genesis.start, :finish => frontier.finish)
 				puts "SAME DIRECTION TEST: " + same_direction(reference.vector, test_line.vector).to_s
 				puts "NO INSERT TEST: " + no_intersection(idx2, genesis).to_s

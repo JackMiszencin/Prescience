@@ -5,6 +5,7 @@ class Convex
 	embeds_many :triangles
 	# add in validation to make sure all cross products are in same direction
 	def triangulate
+		self.triangles = []
 		primary = self.lines.first.start
 		self.lines.each_with_index do |l, idx|
 			next if idx == 0 || idx == (self.lines.count - 1)

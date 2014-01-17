@@ -1,6 +1,8 @@
 class Line
 	include Mongoid::Document
-	embedded_in :shape, :inverse_of => :line
+	embedded_in :polygon, :inverse_of => :lines
+	embedded_in :triangle, :inverse_of => :lines
+	embedded_in :convex, :inverse_of => :lines
 	# field :start_lat, :type => Float
 	# field :start_lng, :type => Float
 	# field :end_lat, :type => Float
