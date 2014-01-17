@@ -7,6 +7,8 @@ class Polygon
 	embeds_many :triangles
 	embeds_many :convexes
 
+	# The test line I've been running for the following function is below:
+	# p.make_lines([[10.0,0.0],[0.0,0.0],[0.0,8.0],[9.0,10.0],[7.0,2.0],[3.0,5.0],[4.5,6.0],[6.0,4.0],[7.0,8.0],[1.0,7.0],[1.0,1.0],[9.0,1.0],[9.0,3.0],[10.0,3.0],[10.0,0.0]])
 	def make_lines(points)
 		points.each_with_index do |p, idx|
 			next if idx == 0
