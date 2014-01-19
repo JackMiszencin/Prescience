@@ -4,4 +4,8 @@ class Farmer
   has_many :farms
   field :cell, :type => String
   embeds_one :contact
+
+  def formatted_cell
+  	self.cell.to_s
+  end
 end

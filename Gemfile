@@ -9,6 +9,7 @@ gem 'sqlite3'
 gem 'mongo'
 gem 'mongoid'
 gem 'mongoid_search'
+gem 'twilio-ruby'
 
 
 # Gems used only for assets and not required
