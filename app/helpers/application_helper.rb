@@ -22,4 +22,9 @@ module ApplicationHelper
 			return Math.sqrt((point_2[0] - point_1[0])**2 + (point_2[1] - point_1[1])**2)
 		end
 	end
+	module WeatherHelper
+		def get_celsius(far)
+			return ((far.to_f - 32.0) * (5.0/9.0))
+		end
+	end
 end

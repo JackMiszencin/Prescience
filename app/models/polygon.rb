@@ -22,6 +22,11 @@ class Polygon
 		self.save
 	end
 
+	def first_point
+		return false unless self.triangles.first
+		self.triangles.first.first_point
+	end
+
 	def cumulative_cross_product
 		total_product = 0.0
 		self.lines.each_with_index do |l, idx|
