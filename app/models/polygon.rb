@@ -3,7 +3,7 @@ class Polygon
 	include Mongoid::Document
 	embedded_in :land, :inverse_of => :polygon
 	field :area, :type => Float
-	embeds_many :lines
+	embeds_many :segments, :class_name => "Line"
 	embeds_many :triangles
 	embeds_many :convexes
 
@@ -12,7 +12,7 @@ class Polygon
 	def make_lines(points)
 		points.each_with_index do |p, idx|
 			next if idx == 0
-			l = self.lines.build
+			l = self.segments.build
 			l.start = points[idx-1]
 			puts "NEW LINE"
 			puts points[idx-1].to_s
@@ -29,9 +29,9 @@ class Polygon
 
 	def cumulative_cross_product
 		total_product = 0.0
-		self.lines.each_with_index do |l, idx|
+		(@lines || self.segments).each_with_index do |l, idx|
 			frontier = ((idx == line_count - 1) ? 0 : idx + 1)
-			total_product += cross_product(l.vector, self.lines[frontier].vector)
+			total_product += cross_product(l.vector, (@lines || self.segments)[frontier].vector)
 		end
 		return total_product
 	end
@@ -43,24 +43,25 @@ class Polygon
 
 	def triangulate
 		idx = 0
-		genesis = self.lines[0]
+		@lines = self.segments
+		genesis = @lines[0]
 		c = self.convexes.build
 		c.lines << genesis.clone
 		while idx <= line_count - 2
 			idx2 = idx + 1
-			current = lines[idx]
-			frontier = lines[idx2]
+			current = @lines[idx]
+			frontier = @lines[idx2]
 			# Translation of below line: If this and next line are not in same direction as polygon spin
-			if same_direction(current.vector, (frontier || genesis).vector ) && no_intersection(idx2, nil) # Not really sure what this line was for: < && self.same_direction(self.lines[idx + 1].vector, self.lines.first.vector) >
+			if same_direction(current.vector, (frontier || genesis).vector ) && no_intersection(idx2, nil) # Not really sure what this line was for: < && self.same_direction(@lines[idx + 1].vector, @lines.first.vector) >
 				c.lines << frontier.clone
 				idx += 1
 				next 
 			else # Go into build_convex, which will give you an index value back to feed idx as the next line to process
 				idx3 = build_convex(idx2)
-				new_line = Line.new(:start => current.finish, :finish => (self.lines[idx3] || genesis).start)
+				new_line = Line.new(:start => current.finish, :finish => (@lines[idx3] || genesis).start)
 				reset_lines(idx2, idx3, new_line)
 				puts "IDX: #{idx.to_s}"
-				puts self.lines.count
+				puts @lines.count
 				# c.lines << new_line
 				# idx = idx2
 				next
@@ -74,6 +75,10 @@ class Polygon
 			end
 		end
 		self.save
+		self.segments.each do |x|
+			x.destroy
+		end
+		self.save
 	end
 
 	def includes_point(arry)
@@ -81,8 +86,8 @@ class Polygon
 	end
 
 	def no_intersection(idx, to_line)
-		genesis = (to_line || self.lines.first)
-		l1 = self.lines[idx]
+		genesis = (to_line || @lines.first)
+		l1 = @lines[idx]
 		puts "L1: "
 		puts l1.start.to_s
 		puts l1.finish.to_s
@@ -91,7 +96,7 @@ class Polygon
 		puts l2.start.to_s
 		puts l2.finish.to_s
 		for i in ((idx+1)..(line_count-1))
-			l3 = self.lines[i]
+			l3 = @lines[i]
 			puts "Intersection check on #{i}: " + l2.intersection(l3).to_s
 			if i == idx+1
 				if l2.intersection(l3) == l3.start
@@ -124,7 +129,7 @@ class Polygon
 	def no_insert_intersection(idx, line) # Checks for intersections between line and every line at idx through the end. Might want to also check the others. I don't really see the fucking point.
 		# Line at idx will be that whose start gives "line" its finish.
 		for i in (idx..(line_count-1))
-			line2 = self.lines[i]
+			line2 = @lines[i]
 			if i == idx
 				if line.intersection(line2) == line.finish
 					next
@@ -145,31 +150,29 @@ class Polygon
 	def reset_lines(sub_idx,con_idx,new_line) # index of the line to be substituted, index of the next valid line, new line to replace substituted line
 		puts "calling reset_lines, sub_idx: #{sub_idx.to_s}, con_idx: #{con_idx.to_s}"
 		remnants = []
-		items = self.lines.map{|x| x }
 		idx = 0
-		while idx < self.lines.count
+		while idx < @lines.count
 			if idx < sub_idx
-				remnants << items[idx].clone
+				remnants << @lines[idx]
 			elsif idx == sub_idx
-				remnants << new_line.clone
+				remnants << new_line
 			elsif idx >= con_idx
-				remnants << items[idx].clone
+				remnants << @lines[idx]
 			else
 				remnants = remnants
 			end
 			idx += 1
 		end
-		self.lines = remnants
-		self.save
+		@lines = remnants
 	end
 
 
 	def line_count
-		self.lines.count
+		(@lines || self.segments).count
 	end
 
 	def last_line(idx)
-		idx >= (self.lines.count - 1)
+		idx >= ((@lines || self.segments).count - 1)
 	end
 
 	# Make this a recursive funciton that calls itself every time there's a new line encountered which presents an alternate direction from the turn of the polygon.
@@ -177,19 +180,19 @@ class Polygon
 		puts
 		puts "BUILD_CONVEX TRIGGERED ON #{idx.to_s}"
 		fin = line_count - 1
-		genesis = self.lines[idx]
-		reference = self.lines[idx-1]
+		genesis = @lines[idx]
+		reference = @lines[idx-1]
 		c = self.convexes.build
 		c.lines << genesis.clone
 		while idx <= fin
 			idx2 = idx + 1
 			idx3 = idx + 2
-			current = lines[idx]
-			frontier = lines[idx2]
+			current = @lines[idx]
+			frontier = @lines[idx2]
 			# Translation of below line: If this and next line are not in same direction as polygon spin
 			puts "Checking no intersection on #{idx2.to_s}: " + no_intersection(idx2, genesis).to_s
 			puts "Checking same_direction on #{idx2.to_s}: " + same_direction(current.vector, (frontier || genesis).vector ).to_s
-			if same_direction(current.vector, (frontier || genesis).vector ) && no_intersection(idx2, genesis) # Not really sure what this line was for: < && self.same_direction(self.lines[idx + 1].vector, self.lines.first.vector) >
+			if same_direction(current.vector, (frontier || genesis).vector ) && no_intersection(idx2, genesis) # Not really sure what this line was for: < && self.same_direction(@lines[idx + 1].vector, @lines.first.vector) >
 				c.lines << frontier.clone
 				test_line = Line.new(:start => genesis.start, :finish => frontier.finish)
 				puts "SAME DIRECTION TEST: " + same_direction(reference.vector, test_line.vector).to_s
@@ -204,9 +207,9 @@ class Polygon
 				end 
 			else # Go into build_convex, which will give you an index value back to feed idx as the next line to process
 				idx3 = build_convex(idx2)
-				new_line = Line.new(:start => current.finish, :finish => (self.lines[idx3] || self.lines.first).start)
+				new_line = Line.new(:start => current.finish, :finish => (@lines[idx3] || @lines.first).start)
 				reset_lines(idx2, idx3, new_line)
-				puts self.lines.count.to_s
+				puts @lines.count.to_s
 				# c.lines << new_line
 				# idx = idx2
 				next
@@ -229,10 +232,10 @@ class Polygon
 		# 	# WHEN THE RECURSION HAS DONE ITS WORK, WE ARE GIVEN BACK THE INDEX OF THE NEXT LINE TO ADD IN, AKA, THE INDEX OF THE LINE THAT THE FUNCTION
 		# 	# DETERMINED WOULD FIT THE REFERENCE LINE
 
-		# 	prev = self.lines[cursor - 1]
+		# 	prev = @lines[cursor - 1]
 		# 	prev = skipped_cursor if skipped_cursor
 		# 	skipped_cursor = nil
-		# 	l = self.lines[cursor]
+		# 	l = @lines[cursor]
 		# 	if same_direction(reference.vector, [ (l.start_lng - reference.end_lng), (l.start_lat - reference.end_lat) ]) # SAYS THAT THE REFERENCE AND THE CURRENT LINE FIT
 		# 		c.lines.build(:start => prev.finish, :finish => initial.start)
 		# 		return cursor
@@ -242,7 +245,7 @@ class Polygon
 		# 		else
 		# 			skipped_cursor = cursor
 		# 			cursor = create_convex(cursor)
-		# 			x = self.lines[cursor]
+		# 			x = @lines[cursor]
 		# 			c.lines.build(:start => prev.finish, :finish => x.start)
 
 		# 			# MAKE SURE THAT A LINE BETWEEN THE END OF X AND THE START OF INITIAL IS IN THE SAME DIRECTION

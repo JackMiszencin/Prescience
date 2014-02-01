@@ -3,7 +3,7 @@ class Triangle
 	include Mongoid::Timestamps
 	include ApplicationHelper::MathHelper
 	embedded_in :polygon
-	embeds_many :lines
+	embeds_many :sides, :class_name => "Line"
 
 	field :first_point, :type => Array
 	field :second_point, :type => Array
@@ -32,28 +32,28 @@ class Triangle
 	# after_create :make_lines
 
 	def make_lines
-		self.lines = []
+		self.sides = []
 		l1 = Line.new(:start => self.first_point, :finish => self.second_point)
 		l2 = Line.new(:start => self.second_point, :finish => self.third_point)
 		l3 = Line.new(:start => self.third_point, :finish => self.first_point)
-		self.lines << l1
-		self.lines << l2
-		self.lines << l3
+		self.sides << l1
+		self.sides << l2
+		self.sides << l3
 	end
 
 	# def new_line(point)
 
-	# 	case self.lines.count
+	# 	case self.sides.count
 	# 	when 0
 
 	# 	when 1
-	# 		l = self.lines.build
-	# 		l.start = self.lines.first.finish
+	# 		l = self.sides.build
+	# 		l.start = self.sides.first.finish
 	# 		l.save
 	# 	when 2
-	# 		l = self.lines.build
-	# 		l.start = self.lines.last.finish
-	# 		l.end = self.lines.first.start
+	# 		l = self.sides.build
+	# 		l.start = self.sides.last.finish
+	# 		l.end = self.sides.first.start
 	# 		l.save
 	# 	when 3
 	# 		return false
@@ -67,8 +67,8 @@ class Triangle
 	end
 	def includes_point(point)
 		v0 = other_vector(point)
-		v1 = self.lines.first.vector
-		v2 = self.lines.last.inverse_vector
+		v1 = self.sides.first.vector
+		v2 = self.sides.last.inverse_vector
 		denominator = ( (dot_product(v1,v2) * dot_product(v2,v1) ) - ( dot_product(v1,v1) * dot_product(v2,v2) )   )
 		a = ((dot_product(v2,v1) * dot_product(v0,v2)) - (dot_product(v2,v2) * dot_product(v0,v1))) / denominator
 		b = ((dot_product(v0,v1) * dot_product(v1,v2)) - (dot_product(v0,v2) * dot_product(v1,v1))) / denominator
