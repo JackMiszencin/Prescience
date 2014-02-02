@@ -4,7 +4,7 @@ class FarmWorkersController < ApplicationController
 		postal_code = params[:Body].to_s.strip
 		fw = FarmWorker.create_weather_farmer(cell, postal_code)
 		if fw && fw.class_name == "FarmWorker"
-			fw.send_message("Thanks for signing up! You'll now receive a weather forecast every day at 5pm.")
+			fw.send_confirmation
 		else
 			FarmWorker.send_error(cell, fw)
 		end
