@@ -2,10 +2,10 @@ class Farmer
   include Mongoid::Document
   include Mongoid::Timestamps
   has_many :farm_workers
-  field :cell, :type => String
+  field :cell, :type => String, :index => true
   embeds_one :contact
 
-  validates :cell, :presence => true
+  validates :cell, :presence => true, :uniqueness => true
 
 
 

@@ -7,11 +7,11 @@ class FarmWorker # A join model for connecting the Farm, Farmer, and Zone classe
   validates :farmer, :presence => true
   validates :farm, :presence => true
   validates :zone, :presence => true
-  validates :cell, :presence => true
+  validates :cell, :presence => true, :uniqeness => true
   validates :postal_code, :presence => true
 
-  field :cell
-  field :postal_code
+  field :cell, :index => true
+  field :postal_code, :index => true
 
   def formatted_cell # No need to format just yet, but eventually, we'll need to.
   	self.cell.to_s
