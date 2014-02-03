@@ -11,7 +11,7 @@ class FarmWorkersController < ApplicationController
 			end
 		rescue Exception => e
 			message = "EXCEPTION: #{e.class.name}: #{e.message}"
-			ErrorMailer.send_error(message)
+			ErrorMailer.send_error(message).deliver
 		end
 	end
 end
