@@ -6,13 +6,16 @@ class Zone
   belongs_to :province
   belongs_to :region
   has_many :farm_worker
-  field :postal_code, :type => String
+  field :postal_code, :type => String, :index => true
   field :name, :type => String
   field :latitude, :type => Float
   field :longitude, :type => Float
   field :has_google_result, :type => Boolean
   field :lng_lat_source, :type => String
   field :problem, :type => Boolean
+
+  validates :postal_code, :presence => true, :uniqueness => true
+  validates :name, :presence => true
 
   # METHODS FOR GATHERING GEOCOORDINATE DATA
 
