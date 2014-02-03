@@ -21,8 +21,8 @@ class FarmWorker # A join model for connecting the Farm, Farmer, and Zone classe
   	fw = FarmWorker.new(:cell => cell, :postal_code => postal_code)
   	z = Zone.by_postal_code(postal_code)
   	unless z
-  		fw.errors.add(:postal_code, "Not a valid postal code")
-  		return false
+  		fw.errors.add(:postal_code, "Sorry, this is not a valid postal code")
+  		return "Sorry, this is not a valid postal code"
   	end
   	fw.zone_id = z.id.to_s
   	farm = Farm.new(:state => "weather_only", :zone_id => z.id.to_s)
