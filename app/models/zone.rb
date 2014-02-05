@@ -105,7 +105,16 @@ class Zone
 	# METHODS FOR SENDING SMS
 
 	def send_weather(opts={})
-
 	end
+
+  def weather_report(opts={})
+    report = WeatherReport.get_report(self.latitude, self.longitude, opts)
+  end
+
+  def weather_text(opts={})
+    report = WeatherReport.get_report(self.latitude, self.longitude, opts)
+    return report.get_sms(opts) if report
+    return false
+  end
 
 end
