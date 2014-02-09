@@ -5,7 +5,7 @@ class Zone
   include Mongoid::Timestamps
   belongs_to :province
   belongs_to :region
-  has_many :farm_worker
+  has_many :farm_workers
   field :postal_code, :type => String, :index => true
   field :name, :type => String
   field :latitude, :type => Float
@@ -115,6 +115,10 @@ class Zone
     report = WeatherReport.get_report(self.latitude, self.longitude, opts)
     return report.get_sms(opts) if report
     return false
+  end
+
+  def weather_farm_workers
+    FarmWorker.where(:zone_id => self.id.to_s).where(:weather => true)
   end
 
 end

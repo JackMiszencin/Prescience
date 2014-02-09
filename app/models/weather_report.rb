@@ -4,7 +4,7 @@ require 'json'
 class WeatherReport
 	attr_accessor :weather_hash, :high_rain, :med_range, :low_range
 
-	def self.get_report(lat, lng, opts={})
+	def self.get_report(lat, lng, opts={}) # Returns WeatherReport object for the latitude and longitude specified.
 		report = WeatherReport.new
 		config = YAML.load_file("#{Rails.root}/config/forecast_io.yml")
 		key = config['api_key']
@@ -17,13 +17,13 @@ class WeatherReport
 			ErrorMailer.send_error(message).deliver
 			return false
 		end
-		return false unless report.weather_hash == nil
+		return false if report.weather_hash == nil
 		return report
 	end
 
 	def get_sms(opts={})
-		if opts["type"].present?
-			return self.send(opts["type"].to_s + "_report")
+		if opts[:type].present?
+			return self.send(opts[:type].to_s + "_report")
 		else
 			return general_report
 		end

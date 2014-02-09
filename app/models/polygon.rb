@@ -125,7 +125,6 @@ class Polygon
 	end
 
 
-	# NEED TO REWRITE THIS
 	def no_insert_intersection(idx, line) # Checks for intersections between line and every line at idx through the end. Might want to also check the others. I don't really see the fucking point.
 		# Line at idx will be that whose start gives "line" its finish.
 		for i in (idx..(line_count-1))
@@ -215,50 +214,6 @@ class Polygon
 				next
 			end
 		end
-
-		# ////////////////       OLD CODE! DON'T WANT TO THROW OUT YET, THOUGH.      ///////////////////////
-
-		# # WE TAKE THE LINE THAT WAS GIVEN TO US, AND WE MAKE IT THE FIRST OF THE CONVEX
-
-		# c.lines.build(:start => initial.start, :finish => initial.finish)
-		# continue = true
-		# skipped_cursor = nil
-		# while idx < line_count # WE'RE GOING TO KEEP ON GOING I SUPPOSE UNTIL WE REACH A POINT THAT GETS THE POLYGON AND THE REFERENCE LINE GOING IN THE
-		# 	# SAME DIRECTION
-
-		# 	# TO BE CLEAR, THE LINE AT [CURSOR] IS THE ONE THAT IS BEING CHECKED, NOT THE ONE THAT HAS ALREADY BEEN ADDED.
-
-		# 	# WE CHECK TO SEE IF THE NEXT LINE IS IN THE RIGHT DIRECTION. IF NOT, WE CREATE A NEW CONVEX, FEEDING CURSOR + 1 IN AS THE NEW INDEX
-		# 	# WHEN THE RECURSION HAS DONE ITS WORK, WE ARE GIVEN BACK THE INDEX OF THE NEXT LINE TO ADD IN, AKA, THE INDEX OF THE LINE THAT THE FUNCTION
-		# 	# DETERMINED WOULD FIT THE REFERENCE LINE
-
-		# 	prev = @lines[cursor - 1]
-		# 	prev = skipped_cursor if skipped_cursor
-		# 	skipped_cursor = nil
-		# 	l = @lines[cursor]
-		# 	if same_direction(reference.vector, [ (l.start_lng - reference.end_lng), (l.start_lat - reference.end_lat) ]) # SAYS THAT THE REFERENCE AND THE CURRENT LINE FIT
-		# 		c.lines.build(:start => prev.finish, :finish => initial.start)
-		# 		return cursor
-		# 	else
-		# 		if same_direction(l.vector, prev.vector) && self.same_direction([ (l.end_lat - initial.start_lat), (l.end_lng - initial.start_lng) ], initial.vector)
-		# 			c.lines.build(:start => l.start, :finish => l.finish)
-		# 		else
-		# 			skipped_cursor = cursor
-		# 			cursor = create_convex(cursor)
-		# 			x = @lines[cursor]
-		# 			c.lines.build(:start => prev.finish, :finish => x.start)
-
-		# 			# MAKE SURE THAT A LINE BETWEEN THE END OF X AND THE START OF INITIAL IS IN THE SAME DIRECTION
-		# 			c.lines.build(:start => x.start, :finish => x.finish)
-		# 		end
-		# 		cursor += 1
-		# 	end
-		# end # END WHILE LOOP
-
-		# return nil
-
-
-
 	end
 
 end

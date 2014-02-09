@@ -20,28 +20,19 @@ class Farm
   field :send_ready, :type => Boolean
   scope :send_ready, where(:send_ready => true)
 
-  # def self.send_texts(message_text, opts={})
-  # 	config = YAML.load_file("#{Rails.root}/config/twilio.yml")
-  # 	begin
-	 #  	client = Twilio::REST::Client.new(config['account_sid'], config['auth_token'])
-  # 	rescue Twilio::REST::RequestError => e
-  # 		puts e.to_s
-  # 	end
-  # 	Farm.send_ready.each do |f|
-  # 		begin
-	 #  		message = client.account.sms.messages.create(:body => message_text,
-	 #  			:to => f.farmer.formatted_cell,
-	 #  			:from => (opts[:from] || config['source_phone']))
-	 #  		puts message.sid
-  # 		rescue Twilio::REST::RequestError => e
-  # 			puts e.to_s
-  # 		end
-  # 	end
-  # end
-
   def lat_lng
     return self.polygon.first_point if self.polygon && self.polygon.first_point
     return self.zone.lat_lng
+  end
+
+  def latitude
+    return self.polygon.first_point[1] if self.polygon.first_point
+    return nil
+  end
+
+  def longitude
+    return self.polygon.first_point[0] if self.polygon.first_point
+    return nil
   end
 
   def get_forecast
